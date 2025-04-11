@@ -14,3 +14,10 @@
  - Loads in Bird and Pipes
  - Constantly looks for input for bird position
  - Updates display with all new pos
+
+# Future features
+ - [ ] Score
+ - [ ] Settings
+ - [ ] Realtime background change (day night cycle)
+ - [ ] Skins
+ - [ ] Multiplayer

@@ -1,0 +1,6 @@
+C:\Users\Hi-bu\Reese\VSC\Flappy-Bird\obj\Debug\net8.0\Flappy-Bird.csproj.AssemblyReference.cache
+C:\Users\Hi-bu\Reese\VSC\Flappy-Bird\obj\Debug\net8.0\Flappy-Bird.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Hi-bu\Reese\VSC\Flappy-Bird\obj\Debug\net8.0\Flappy-Bird.AssemblyInfoInputs.cache
+C:\Users\Hi-bu\Reese\VSC\Flappy-Bird\obj\Debug\net8.0\Flappy-Bird.AssemblyInfo.cs
+C:\Users\Hi-bu\Reese\VSC\Flappy-Bird\obj\Debug\net8.0\Flappy-Bird.csproj.CoreCompileInputs.cache
+C:\Users\Hi-bu\Reese\VSC\Flappy-Bird\obj\Debug\net8.0\Flappy-Bird.sourcelink.json
