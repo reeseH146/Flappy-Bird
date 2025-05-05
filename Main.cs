@@ -1,6 +1,5 @@
 ﻿using Raylib_cs;
 using FlappyBird.Entities;
-using System.Net.Sockets;
 
 public class Program {
     public static void Main() {
@@ -11,12 +10,16 @@ public class Program {
         Raylib.InitWindow(ScreenX, ScreenY, "Flappy Bird");
 
         PlayerBird FlappyPlayer = new PlayerBird(100, Convert.ToInt16(ScreenY * 0.5)); // Creates bird object
-        //Pipe[] Pipes = new Pipe[1]; // Maxium of 10 pipes in game
+        Pipe[] Pipes = new Pipe[5]; // Maximum of 10 pipes in game
         Raylib.SetTargetFPS(60);
-        Pipe Pipes = new Pipe(1000, 580 + 300);
-        /*int[] PipeX = [i for (i=0; )];
-        for (int i = 0; i == 10; i++) { // Creates each set of pipes
-        }*/
+        // Pipe Pipes = new Pipe(1000, 580 + 300);
+        int XPos = 500;
+        int YEnd = 50;
+        for (int i = 0; i < 5; i++) { // Creates each set of pipes
+            Pipes[i] = new Pipe(XPos, YEnd);
+            XPos += 350;
+            YEnd += 50;
+        }
         Console.WriteLine("All program components loaded.");
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +36,10 @@ public class Program {
             Raylib.ClearBackground(Color.SkyBlue);
             Raylib.DrawRectangle(0, Convert.ToInt16(ScreenY * 0.8), ScreenX, Convert.ToInt16(ScreenY * 0.8), Color.Green);
             FlappyPlayer.Draw();
-            Pipes.Draw();
+            foreach (Pipe Pip in Pipes) {
+                    Pip.Draw();
+            }
+            //Pipes.Draw();
             Raylib.EndDrawing();
 
             // Checks for player movement
@@ -47,20 +53,19 @@ public class Program {
                     GameOn = false;
                 }
             }
-            /*foreach (Pipe Pip in Pipes) {
-                Pip.Move(ScreenX);
+            foreach (Pipe Pip in Pipes) {
+                Pip.Move(1700);
                 if (Pip.Collision(FlappyPlayer.HitBox)) {
-                    Raylib.CloseWindow();
+                    GameOn = false;
+                    //Raylib.CloseWindow();
                 }
-                else {
-                    Pip.Draw();
-                }
-            }*/
-            Pipes.Move(ScreenX);
-            if (Pipes.Collision(FlappyPlayer.HitBox)) {
+            }
+
+            //Pipes.Move(ScreenX);
+            /*if (Pipes.Collision(FlappyPlayer.HitBox)) {
                     Console.WriteLine("Game over and closing");
                     GameOn = false;
-                }
+                }*/
         }
         Raylib.CloseWindow();
     }

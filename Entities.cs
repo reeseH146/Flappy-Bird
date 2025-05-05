@@ -28,6 +28,9 @@ namespace FlappyBird.Entities{
             MoveDirection = false;
             // Image
             BirdTex = Raylib.LoadImage("C:/Users/Hi-bu/Reese/VSC/Flappy-Bird/Assets/LocalImages/Bird.png");
+            if (Raylib.IsImageValid(BirdTex)) {
+                BirdTex = Raylib.LoadImage("C:/Users/Hi-bu/Reese/VSC/Flappy-Bird/Assets/Bird.png");
+            }
             Raylib.ImageResizeNN(ref BirdTex, 100, 100);   
             BirdImage = Raylib.LoadTextureFromImage(BirdTex);
             // Collision
@@ -57,7 +60,7 @@ namespace FlappyBird.Entities{
             }
             /*if (MoveDirection) {
                 PosYDiff = 9 * (PosYMove ^ 2); // Recalculates offset from snapshot
-                if (PosYDiff >= (PosYMoveChange * 180)) { // Checks whether to move dowd. If offset > Rate of change (every change) * times changed for 3 seconds
+                if (PosYDiff >= (PosYMoveChange * 180)) { // Checks whether to move down. If offset > Rate of change (every change) * times changed for 3 seconds
                     PosYMove = 0;
                     MoveDirection = false;
                 }
@@ -104,11 +107,15 @@ namespace FlappyBird.Entities{
 
         public Pipe(int ScreenPosX, int YEnd) {
             PosX = ScreenPosX;
-            PosY = [0, YEnd]; // Transforms...
+            PosY = [0 - YEnd, 400 - YEnd]; // Transforms...
             Speed = 5;
             Image PipeImg = Raylib.LoadImage("C:/Users/Hi-bu/Reese/VSC/Flappy-Bird/Assets/LocalImages/Pipe.png");
+            if (Raylib.IsImageValid(PipeImg)) {
+                PipeImg = Raylib.LoadImage("C:/Users/Hi-bu/Reese/VSC/Flappy-Bird/Assets/Pipe.png");
+            }
+            Raylib.ImageResize(ref PipeImg, 100, 400);
             PipeTex[0] = Raylib.LoadTextureFromImage(PipeImg);
-            HitBox = [PosX, PosX + 290, PosY[0], PosY[0] + 480,/*Bottom Rect ->*/PosY[1], PosY[1] + 580];
+            HitBox = [PosX, PosX + 100, PosY[0], PosY[1],/*Bottom Rect Y ->*/PosY[1] + 400, PosY[1] + 800];
         }
 
         // Literally draws the pipe textures onto the screen

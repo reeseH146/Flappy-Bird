@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Flappy-Bird")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+752fe565d57b52b291db5685d7b149f9a6242f17")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5bea82c9ba371c64ccd302c33a239f4432392571")]
 [assembly: System.Reflection.AssemblyProductAttribute("Flappy-Bird")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Flappy-Bird")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

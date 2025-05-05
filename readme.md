@@ -2,7 +2,7 @@
 
 # Bird class
  - Rect
- - Moves method, if recieves input then increases height, else goes down, should work like a parabola but the x position doesn't change
+ - Moves method, if receives input then increases height, else goes down, should work like a parabola but the x position doesn't change
 
 # Pipe class
  - Creates rect, heights are passed in
