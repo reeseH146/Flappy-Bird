@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>winexe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>Flappy_Bird</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NativeFileDialogNET" Version="2.0.2" />
     <PackageReference Include="Raylib-cs" Version="7.0.1" />
   </ItemGroup>
 
