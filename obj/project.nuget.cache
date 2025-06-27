@@ -1,6 +1,10 @@
 {
   "version": 2,
+<<<<<<< HEAD
   "dgSpecHash": "DD1DIAU9r9I=",
+=======
+  "dgSpecHash": "LoIbkSo3HL0=",
+>>>>>>> 1dddef907ebeb8bf6bc8ed19177fe99c28b265ef
   "success": true,
   "projectFilePath": "C:\\Users\\Hi-bu\\Reese\\VSC\\Flappy-Bird\\Flappy-Bird.csproj",
   "expectedPackageFiles": [
