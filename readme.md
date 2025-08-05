@@ -11,6 +11,17 @@
  - As game plays, distance can be decreased between the pipes
 
 # Main
+ - Initialise main resources (Bird, pipes)
+ - Runs event loop manager
+
+# Event loop manager
+ - Checks which loop
+
+# Menu event
+ - Background
+ - Buttons to other events
+
+# Game event
  - Loads in Bird and Pipes
  - Constantly looks for input for bird position
  - Updates display with all new pos

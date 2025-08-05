@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>winexe</OutputType>
+    <OutputType>exe</OutputType> <!--Possibly winexe-->
     <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>Flappy_Bird</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -12,5 +12,12 @@
     <PackageReference Include="NativeFileDialogNET" Version="2.0.2" />
     <PackageReference Include="Raylib-cs" Version="7.0.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 
 </Project>
