@@ -2,7 +2,8 @@
 using FlappyBird.Entities;
 using System.Numerics;
 using NativeFileDialogNET; // For opening file explorer to select images for custom skins
-using System.Diagnostics; // No idea how this got here
+using System.Diagnostics;
+using System.Linq.Expressions; // No idea how this got here
 
 namespace Game
 {
@@ -13,33 +14,44 @@ namespace Game
         private static Scene MenuState = Scene.Menu; // 0:Menu, 1:Game, 2:Skins, 3:Settings, 4:Close. Sets Menu as default
         private static int ScreenX = 16 * 70; // Values used to set max window size, reconfig separately later
         private static int ScreenY = 9 * 70;
-        private static PlayerBird FlappyPlayer = new PlayerBird(100, Convert.ToInt16(ScreenY * 0.5)); // Creates bird object
-        private static Pipe[] Pipes = new Pipe[5]; // Write code for max pipes dynamically generated based on screen size
+        private static PlayerBird FlappyPlayer; // Will not work if not initialised
+        private static PipeObject[] PipeCollection = new PipeObject[5]; // Write code for max pipes dynamically generated based on screen size
 
         // Text informations
-
         private static Font MonospaceFont;
         private static string[] GameText = new string[]
         {
-            "Flappy Bird Game", // 0
+            "Flappy Bird Game", // 0 - Menu texts
             "Start",
             "Skins",
             "Settings",
             "Close",
-            "Return",           // 5 - Return button used in skins and settings menu
-            "Skins",            // 6 - Skins menu
-            "Settings"          // 7 - Settings menu
+            "Ready?",           // 5 - Game texts
+            "3",                // Counting down game start
+            "Start",
+            "Game Over",
+            "Score : ",
+            "0",                // Tracks score
+            "Return",           // 11 - Return button used in skins and settings menu
+            "Skins",            // 12 - Skins menu
+            "Settings"          // 13 - Settings menu
         };
         private static int[] TextSize = new int[]
         {
-            95,                 // 0
+            95,                 // 0 - Menu texts
             60,                 
             60,                 
             60,                 
             60,                 
-            50,                 // 5 - Return button used in skins and settings menu
-            95,                 // 6 - Skins menu
-            95                  // 7 - Settings menu
+            100,                // 5 - Game
+            100,                // Counting down game start
+            100,
+            100,
+            100,
+            40,                 // Tracks score
+            50,                 // 11 - Return button used in skins and settings menu
+            95,                 // 12 - Skins menu
+            95                  // 13 - Settings menu
         };
         private static double[,] TextRelPos = new double[,] // Used to calculate text rect pos relative to the centre of the rect
         {
@@ -48,9 +60,15 @@ namespace Game
             {0.5, 0.45},
             {0.5, 0.60},
             {0.5, 0.75},
-            {0.90, 0.925},       // 5 - Return button used in skins and settings menu
-            {0.5, 0.25 * 0.5},  // 6 - Skins menu
-            {0.5, 0.25 * 0.5},  // 7 - Settings menu
+            {0.5, 0.5},         // 5 - Game
+            {0.5, 0.5},         // Counting down game start
+            {0.5, 0.5},
+            {0.5, 0.5},
+            {0.5, 0.5},
+            {0.5, 0.05},        // Tracks score
+            { 0.90, 0.925},     // 11 - Return button used in skins and settings menu
+            { 0.5, 0.25 * 0.5}, // 12 - Skins menu
+            {0.5, 0.25 * 0.5},  // 13 - Settings menu
         };
         private static Rectangle[] TextRect = new Rectangle[GameText.Count()]; // Used for collision and positioning when drawing, possibly also text background
         
@@ -70,12 +88,14 @@ namespace Game
             MonospaceFont = Raylib.LoadFontEx("Assets/Fonts/RobotoMono-Regular.ttf", 100, null, 0); // RL default font if not found
             Raylib.SetTextureFilter(MonospaceFont.Texture, TextureFilter.Bilinear);
             // Debug.WriteLine((MonospaceFont.Texture.Id == 0) ? "Font not loaded" : "Font loaded");
+            // Creates player and pipe objects
             // Pipe Pipes = new Pipe(1000, 580 + 300);
             int XPos = 500;
             int YEnd = 50;
+            FlappyPlayer = new PlayerBird(ScreenX, ScreenY); // Creates bird object
             for (int i = 0; i < 5; i++)
             { // Creates each set of pipes
-                Pipes[i] = new Pipe(XPos, YEnd);
+                PipeCollection[i] = new PipeObject(XPos, YEnd);
                 XPos += 350;
                 YEnd += 50;
             }
@@ -143,10 +163,9 @@ namespace Game
         // ### --- ### // --- ### --- // ### --- ### // --- ### --- // ### --- ### // --- ### --- // ### --- ### //
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        // Tried making arrays storing text positions and got runtime errors that don't sound too good so guess I'm putting off sustainable code for fonts/texts
         private static void MenuEvent()
         {
-            // Updates the game events and graphics
+            // Update render
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.SkyBlue);
             Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
@@ -184,50 +203,109 @@ namespace Game
         // Actual game
         private static void GameEvent()
         {
-            Console.WriteLine(1);
-            MenuState = Scene.Close;
-            
-            // Runs event loop
+            // Starts the game
+            Raylib.BeginDrawing();
+            Raylib.ClearBackground(Color.SkyBlue);
+            Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
+            Raylib.WaitTime(0.5);
+            FlappyPlayer.Draw();
+            /*foreach (Pipe in PipeContainer)
+            {
+                Pipe.Draw
+            }*/
+            Raylib.DrawTextEx(MonospaceFont, GameText[5], new Vector2(TextRect[5].X, TextRect[5].Y), TextSize[5], 4, Color.Black);
+            Raylib.EndDrawing();
+            for (int i = 0; i < 3; i++)
+            {
+                Raylib.BeginDrawing();
+                Raylib.ClearBackground(Color.SkyBlue);
+                Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
+                Raylib.WaitTime(0.5);
+                FlappyPlayer.Draw();
+                /*foreach (Pipe in PipeContainer)
+                {
+                    Pipe.Draw
+                }*/
+                Raylib.DrawTextEx(MonospaceFont, GameText[6], new Vector2(TextRect[6].X, TextRect[6].Y), TextSize[6], 4, Color.Black);
+                GameText[6] = $"{Convert.ToInt16(GameText[6]) - 1}";
+                Raylib.EndDrawing();
+            }
+            Raylib.BeginDrawing();
+            Raylib.ClearBackground(Color.SkyBlue);
+            Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
+            Raylib.DrawTextEx(MonospaceFont, GameText[7], new Vector2(TextRect[7].X, TextRect[7].Y), TextSize[7], 4, Color.Black);
+            Raylib.WaitTime(0.5);
+            FlappyPlayer.Draw();
+            /*foreach (Pipe in PipeContainer)
+            {
+                Pipe.Draw
+            }*/
+            Raylib.DrawTextEx(MonospaceFont, GameText[7], new Vector2(TextRect[7].X, TextRect[7].Y), TextSize[7], 4, Color.Black);
+            Raylib.EndDrawing();
 
-
-            // Main Loop
-            /*bool GameOn = true;
-            while (GameOn) {
-                // Updates the game events and graphics
+            // Actual game
+            bool Lost = false;
+            while (!Raylib.WindowShouldClose() && !Lost)
+            {
+                // Updates render
                 Raylib.BeginDrawing();
                 Raylib.ClearBackground(Color.SkyBlue);
                 Raylib.DrawRectangle(0, Convert.ToInt16(ScreenY * 0.8), ScreenX, Convert.ToInt16(ScreenY * 0.8), Color.Green);
                 FlappyPlayer.Draw();
-                foreach (Pipe Pip in Pipes) {
-                        Pip.Draw();
-                }
-                //Pipes.Draw();
+                /*foreach (PipeObject Pipe in PipeCollection)
+                {
+                    Pipe.Draw();
+                }*/
+                /* Score counter Raylib.DrawTextEx(MonospaceFont, GameText[i], new Vector2(TextRect[i].X, TextRect[i].Y), TextSize[i], 4, Color.Black); // Score
+                Raylib.DrawRectangleRec(TextRect[10], Color.White);*/
                 Raylib.EndDrawing();
 
-                // Checks for player movement
-                if (Raylib.IsKeyPressed(KeyboardKey.W) || Raylib.IsKeyPressed(KeyboardKey.Space) || Raylib.IsMouseButtonPressed(MouseButton.Left)) {
-                    //FlappyPlayer.PosYMove = 0;
-                    FlappyPlayer.MoveDirection = true;
-                }
-                else {
-                    FlappyPlayer.Move();
-                    if (FlappyPlayer.Collision(ScreenY)) {
+                // Checks collision and quits if collided
+                if (FlappyPlayer.CeilingCollision(ScreenY)) Lost = true;
+
+                //Pipes.Move(ScreenX);
+                /*if (Pipes.Collision(FlappyPlayer.HitBox)) {
+                        Console.WriteLine("Game over and closing");
                         GameOn = false;
-                    }
-                }
-                foreach (Pipe Pip in Pipes) {
+                }*/
+
+                // Checks for jump input
+                if (Raylib.IsKeyPressed(KeyboardKey.Space) || Raylib.IsMouseButtonPressed(MouseButton.Left)) FlappyPlayer.Jump = true;
+                
+                // Updates player and pipe position
+                FlappyPlayer.Move();
+                /*foreach (Pipe Pip in Pipes)
+                {
                     Pip.Move(1700);
-                    if (Pip.Collision(FlappyPlayer.HitBox)) {
+                    if (Pip.Collision(FlappyPlayer.HitBox))
+                    {
                         GameOn = false;
                         //Raylib.CloseWindow();
                     }
                 }*/
 
-            //Pipes.Move(ScreenX);
-            /*if (Pipes.Collision(FlappyPlayer.HitBox)) {
-                    Console.WriteLine("Game over and closing");
-                    GameOn = false;
+
+            }
+            // Decides whether to close or exit to main menu
+            if (Raylib.WindowShouldClose()) MenuState = Scene.Close;
+            else
+            {
+                Raylib.BeginDrawing();
+                Raylib.ClearBackground(Color.SkyBlue);
+                Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
+                Raylib.WaitTime(1);
+                FlappyPlayer.Draw();
+                /*foreach (Pipe in PipeContainer)
+                {
+                    Pipe.Draw
                 }*/
+                Raylib.DrawTextEx(MonospaceFont, GameText[8], new Vector2(TextRect[8].X, TextRect[8].Y), TextSize[8], 4, Color.Black);
+                Raylib.EndDrawing();
+                MenuState = Scene.Menu;
+                GameText[6] = "3";
+                FlappyPlayer.HitBox.X = (int)((ScreenX * 0.075) - (FlappyPlayer.HitBox.Width / 2));
+                FlappyPlayer.HitBox.Y = (int)((ScreenY * 0.5) - FlappyPlayer.HitBox.Height);
+            }
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -239,13 +317,14 @@ namespace Game
         // Shows default skins, users can add skins to folder which shows up or import skins
         private static void SkinEvent()
         {
-            // Updates the game events and graphics
+            // Update render
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.SkyBlue);
             Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
-            //for (int i = 0; i < GameText.Count(); i++) // Draw multiple text
-            Raylib.DrawTextEx(MonospaceFont, GameText[6], new Vector2((int)TextRect[6].X, (int)TextRect[6].Y), TextSize[6], 4, Color.Black);
-            Raylib.DrawTextEx(MonospaceFont, GameText[5], new Vector2((int)TextRect[5].X, (int)TextRect[5].Y), TextSize[5], 4, Color.Black);
+            for (int i = 11; i < 13; i++) // Draw multiple text
+            {
+                Raylib.DrawTextEx(MonospaceFont, GameText[i], new Vector2((int)TextRect[i].X, (int)TextRect[i].Y), TextSize[i], 4, Color.Black);
+            }
             FlappyPlayer.Draw();
             /*foreach (Pipe in PipeContainer)
             {
@@ -258,10 +337,9 @@ namespace Game
             {
                 Vector2 MousePos = Raylib.GetMousePosition();
                 //for (int i = 1; i < 5; i++) // Looks through each text rect
-                if (Raylib.CheckCollisionPointRec(MousePos, TextRect[5])) // Checks if mouse pos is within text rect
+                if (Raylib.CheckCollisionPointRec(MousePos, TextRect[11])) // Checks if mouse pos is within text rect
                 {
                     MenuState = Scene.Menu; // Changes Menu state to respective state based button pressed
-                    Console.WriteLine($"Menu Button Pressed at {MousePos}");
                 }
             }
         }
@@ -275,18 +353,18 @@ namespace Game
         // Allows changing on volumes/sounds and variables (spawn, pipe frequency and displacement)
         private static void SettingsEvent()
         {
-            // Updates the game events and graphics
+            // Update render
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.SkyBlue);
             Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
-            //for (int i = 0; i < GameText.Count(); i++) // Draw multiple text
-            Raylib.DrawTextEx(MonospaceFont, GameText[7], new Vector2((int)TextRect[7].X, (int)TextRect[7].Y), TextSize[7], 4, Color.Black);
-            Raylib.DrawTextEx(MonospaceFont, GameText[5], new Vector2((int)TextRect[5].X, (int)TextRect[5].Y), TextSize[5], 4, Color.Black);
             FlappyPlayer.Draw();
             /*foreach (Pipe in PipeContainer)
             {
                 Pipe.Draw
             }*/
+            //for (int i = 0; i < GameText.Count(); i++) // Draw multiple text
+            Raylib.DrawTextEx(MonospaceFont, GameText[11], new Vector2((int)TextRect[11].X, (int)TextRect[11].Y), TextSize[11], 4, Color.Black);
+            Raylib.DrawTextEx(MonospaceFont, GameText[13], new Vector2((int)TextRect[13].X, (int)TextRect[13].Y), TextSize[13], 4, Color.Black);
             Raylib.EndDrawing();
 
             // Check if player clicks on mouse button
@@ -294,7 +372,7 @@ namespace Game
             {
                 Vector2 MousePos = Raylib.GetMousePosition();
                 //for (int i = 1; i < 5; i++) // Looks through each text rect
-                if (Raylib.CheckCollisionPointRec(MousePos, TextRect[5])) // Checks if mouse pos is within text rect
+                if (Raylib.CheckCollisionPointRec(MousePos, TextRect[11])) // Checks if mouse pos is within text rect
                 {
                     MenuState = Scene.Menu; // Changes Menu state to respective state based button pressed
                 }

@@ -1,51 +1,54 @@
+using System.Reflection.Metadata.Ecma335;
 using Raylib_cs;
 
 namespace FlappyBird.Entities
 {
     public class PlayerBird
     {
-        // Position
-        public int PosX;
-        // Movement
-        public int PosYCurrent;
-        public int PosYSnap; // Snapshot of YPos when jump
+        // Hitbox - used for positioning and collision
+        public Rectangle HitBox;
+        // More detailed positioning and movement
+        /* public int PosYSnap; // Snapshot of YPos when jump
         public int PosYDiff; // Difference of true YPos from snapshot
         public int PosYMove; // Tracks Y move
-        public const int PosYMoveChange = 360 / 60; // Rate of change of Y Move // Moves 360 pixels in 60 fps
-        public bool MoveDirection; // True for up, false for down
-        public double CoolDown;
-        // Image
-        public Image BirdTex;
-        public Texture2D BirdImage;
-        // Collision object
-        public int[] HitBox;
+        public double CoolDown;*/
+        public bool Jump; // True for up, false for down
+        private float PosYMoveFall;// 360 / 60; // Rate of change of Y Move // Moves 360 pixels in 60 fps 
+        private float PosYMoveJump;
+        // Image/render
+        private Image BirdImage;
+        private Texture2D BirdTex;
 
         // Player class constructor
         public PlayerBird(int ScreenX, int ScreenY)
         {
-            // Position
-            PosX = ScreenX;
+            // Position and dimensions
+            HitBox = new Rectangle
+            (
+                (float)((ScreenX * 0.075) - (ScreenX * 0.05 * 0.5)),
+                (float)((ScreenY * 0.5) - (ScreenX * 0.05)), // No idea why this centres perfectly, I think my mind is going bonkers
+                (float)(ScreenX * 0.1),
+                (float)(ScreenX * 0.1)
+            );
             // Movement
-            PosYCurrent = Convert.ToInt16(ScreenY * 0.5);
+            Jump = false;
+            PosYMoveFall = (float)(ScreenY * 0.004);
+            PosYMoveJump = (float)(ScreenY * 0.25);
+            /*PosYCurrent = Convert.ToInt16(ScreenY * 0.5);
             PosYSnap = Convert.ToInt16(ScreenY * 0.5);
             PosYMove = 0;
-            MoveDirection = false;
+            MoveDirection = false;*/
             // Image
-            BirdTex = Raylib.LoadImage("C:/Users/Hi-bu/Reese/VSC/Flappy-Bird/Assets/LocalImages/Bird.png");
-            if (Raylib.IsImageValid(BirdTex))
-            {
-                BirdTex = Raylib.LoadImage("C:/Users/Hi-bu/Reese/VSC/Flappy-Bird/Assets/Bird.png");
-            }
-            Raylib.ImageResizeNN(ref BirdTex, 100, 100);
-            BirdImage = Raylib.LoadTextureFromImage(BirdTex);
-            // Collision
-            HitBox = [PosX, PosX + 100, PosYCurrent, PosYCurrent + 100];
+            BirdImage = Raylib.LoadImage("Assets/Bird.png"); // Loads custom image
+            Raylib.ImageResizeNN(ref BirdImage, (int)(ScreenX * 0.1), (int)(ScreenX * 0.1)); // Resizes custom image to fix hitbox
+            BirdTex = Raylib.LoadTextureFromImage(BirdImage); // Creates texture from image
+            Raylib.UnloadImage(BirdImage);
         }
 
         public void Draw()
         {
-
-            Raylib.DrawTexture(BirdImage, PosX, PosYCurrent, Color.White);
+            if (Raylib.IsTextureValid(BirdTex)) Raylib.DrawTexture(BirdTex, (int)HitBox.X, (int)HitBox.Y, Color.White); // Attempts to draw custom image
+            else Raylib.DrawRectangleRec(HitBox, Color.Orange); // Draws default image if custom fails
         }
 
         // Called to update movement
@@ -56,7 +59,14 @@ namespace FlappyBird.Entities
         // True for up, var...snapshot..., another variable tracks unit of change which is parsed into a 9x^2 (steeper parabola going up) allowing the bird to move down, if the unit of change exceeds limit (300?) then flips state to decreasing, resets unit of change and snapshots YPos
         public void Move()
         {
-            if (MoveDirection && ((Raylib.GetTime() - CoolDown) >= 0.4))
+            if (Jump)
+            {
+                HitBox.Y -= PosYMoveJump;
+                Jump = false;
+            }
+            else HitBox.Y += PosYMoveFall;
+            
+            /*if (MoveDirection && ((Raylib.GetTime() - CoolDown) >= 0.4))
             {
                 CoolDown = Raylib.GetTime();
                 PosYCurrent -= 275;
@@ -67,7 +77,8 @@ namespace FlappyBird.Entities
                 PosYCurrent += 6;
                 HitBox[2] = PosYCurrent;
                 HitBox[3] = PosYCurrent + 100;
-            }
+            }*/
+
             /*if (MoveDirection) {
                 PosYDiff = 9 * (PosYMove ^ 2); // Recalculates offset from snapshot
                 if (PosYDiff >= (PosYMoveChange * 180)) { // Checks whether to move down. If offset > Rate of change (every change) * times changed for 3 seconds
@@ -85,14 +96,18 @@ namespace FlappyBird.Entities
             PosYMove += PosYMoveChange;*/
         }
 
-        // Player Vertical Collision
-        public bool Collision(int ScreenY)
+        // Player vertical collision, Bird pos centred so must account for actual dimensions
+        public bool CeilingCollision(int ScreenY)
         {
-            if ((PosYCurrent < 0) || (ScreenY < PosYCurrent))
-            {
-                return true;
-            }
-            return false;
+            if ((0 <= HitBox.Y) && ((HitBox.Y + HitBox.Height) <= ScreenY)) return false;
+            else return true;
+        }
+
+        // Unloads all information
+        public void Unload()
+        {
+            Raylib.UnloadImage(BirdImage);
+            Raylib.UnloadTexture(BirdTex);
         }
     }
 
@@ -106,7 +121,7 @@ namespace FlappyBird.Entities
     // Moves along screen                                      - Method to decrement X
     // Resets back when out of screen                          - Method to check X and reset
     // Checks if made contact with player and quits game if so - Hitbox requires rect
-    public class Pipe
+    public class PipeObject
     {
         // Position
         int PosX;
@@ -118,7 +133,7 @@ namespace FlappyBird.Entities
         // Collision
         int[] HitBox;
 
-        public Pipe(int ScreenPosX, int YEnd)
+        public PipeObject(int ScreenPosX, int YEnd)
         {
             PosX = ScreenPosX;
             PosY = [0 - YEnd, 400 - YEnd]; // Transforms...
