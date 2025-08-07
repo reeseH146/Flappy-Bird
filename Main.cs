@@ -14,8 +14,10 @@ namespace Game
         private static Scene MenuState = Scene.Menu; // 0:Menu, 1:Game, 2:Skins, 3:Settings, 4:Close. Sets Menu as default
         private static int ScreenX = 16 * 70; // Values used to set max window size, reconfig separately later
         private static int ScreenY = 9 * 70;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         private static PlayerBird FlappyPlayer; // Will not work if not initialised
-        private static PipeObject[] PipeCollection = new PipeObject[5]; // Write code for max pipes dynamically generated based on screen size
+        private static List<PipeObject> PipeCollection = new List<PipeObject>(); // Write code for max pipes dynamically generated based on screen size
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
         // Text informations
         private static Font MonospaceFont;
@@ -90,15 +92,11 @@ namespace Game
             // Debug.WriteLine((MonospaceFont.Texture.Id == 0) ? "Font not loaded" : "Font loaded");
             // Creates player and pipe objects
             // Pipe Pipes = new Pipe(1000, 580 + 300);
-            int XPos = 500;
-            int YEnd = 50;
             FlappyPlayer = new PlayerBird(ScreenX, ScreenY); // Creates bird object
-            for (int i = 0; i < 5; i++)
-            { // Creates each set of pipes
-                PipeCollection[i] = new PipeObject(XPos, YEnd);
-                XPos += 350;
-                YEnd += 50;
-            }
+            //for (int i = (int)(ScreenX * 0.3); i <= ScreenX; i += (int)(ScreenX * 0.3))
+            //{ // Creates each set of pipes
+                PipeCollection.Add(new PipeObject(ScreenX, ScreenY, (float)(ScreenX * 0.5), (float)(ScreenX * 0.1), (int)FlappyPlayer.HitBox.Width));
+            //}
             // Initialising text rect
             for (int i = 0; i < GameText.Count(); i++)
             {
@@ -121,6 +119,8 @@ namespace Game
             // Runs game until closing
             EventManager();
             // Closes game
+            FlappyPlayer.Unload();
+            foreach (PipeObject Pipe in PipeCollection) Pipe.Unload();
             Raylib.CloseWindow();
         }
 
@@ -169,15 +169,12 @@ namespace Game
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.SkyBlue);
             Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
+            FlappyPlayer.Draw();
+            foreach (PipeObject Pipe in PipeCollection) Pipe.Draw();
             for (int i = 0; i < 5; i++)
             {
                 Raylib.DrawTextEx(MonospaceFont, GameText[i], new Vector2(TextRect[i].X, TextRect[i].Y), TextSize[i], 4, Color.Black);
             }
-            FlappyPlayer.Draw();
-            /*foreach (Pipe in PipeContainer)
-            {
-                Pipe.Draw
-            }*/
             Raylib.EndDrawing();
 
             // Check if player clicks on mouse button
@@ -189,6 +186,7 @@ namespace Game
                     if (Raylib.CheckCollisionPointRec(MousePos, TextRect[i])) // Checks if mouse pos is within text rect
                     {
                         MenuState = (Scene)i; // Changes Menu state to respective state based button pressed
+                        break;
                     }
                 }
             }
@@ -207,41 +205,32 @@ namespace Game
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.SkyBlue);
             Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
-            Raylib.WaitTime(0.5);
             FlappyPlayer.Draw();
-            /*foreach (Pipe in PipeContainer)
-            {
-                Pipe.Draw
-            }*/
+            foreach (PipeObject Pipe in PipeCollection) Pipe.Draw();
             Raylib.DrawTextEx(MonospaceFont, GameText[5], new Vector2(TextRect[5].X, TextRect[5].Y), TextSize[5], 4, Color.Black);
             Raylib.EndDrawing();
+            Raylib.WaitTime(0.5);
             for (int i = 0; i < 3; i++)
             {
                 Raylib.BeginDrawing();
                 Raylib.ClearBackground(Color.SkyBlue);
                 Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
-                Raylib.WaitTime(0.5);
                 FlappyPlayer.Draw();
-                /*foreach (Pipe in PipeContainer)
-                {
-                    Pipe.Draw
-                }*/
+                foreach (PipeObject Pipe in PipeCollection) Pipe.Draw();
                 Raylib.DrawTextEx(MonospaceFont, GameText[6], new Vector2(TextRect[6].X, TextRect[6].Y), TextSize[6], 4, Color.Black);
                 GameText[6] = $"{Convert.ToInt16(GameText[6]) - 1}";
                 Raylib.EndDrawing();
+                Raylib.WaitTime(0.5);
             }
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.SkyBlue);
             Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
             Raylib.DrawTextEx(MonospaceFont, GameText[7], new Vector2(TextRect[7].X, TextRect[7].Y), TextSize[7], 4, Color.Black);
-            Raylib.WaitTime(0.5);
             FlappyPlayer.Draw();
-            /*foreach (Pipe in PipeContainer)
-            {
-                Pipe.Draw
-            }*/
+            foreach (PipeObject Pipe in PipeCollection) Pipe.Draw();
             Raylib.DrawTextEx(MonospaceFont, GameText[7], new Vector2(TextRect[7].X, TextRect[7].Y), TextSize[7], 4, Color.Black);
             Raylib.EndDrawing();
+            Raylib.WaitTime(0.5);
 
             // Actual game
             bool Lost = false;
@@ -252,59 +241,42 @@ namespace Game
                 Raylib.ClearBackground(Color.SkyBlue);
                 Raylib.DrawRectangle(0, Convert.ToInt16(ScreenY * 0.8), ScreenX, Convert.ToInt16(ScreenY * 0.8), Color.Green);
                 FlappyPlayer.Draw();
-                /*foreach (PipeObject Pipe in PipeCollection)
-                {
-                    Pipe.Draw();
-                }*/
+                foreach (PipeObject Pipe in PipeCollection) Pipe.Draw();
                 /* Score counter Raylib.DrawTextEx(MonospaceFont, GameText[i], new Vector2(TextRect[i].X, TextRect[i].Y), TextSize[i], 4, Color.Black); // Score
                 Raylib.DrawRectangleRec(TextRect[10], Color.White);*/
                 Raylib.EndDrawing();
 
-                // Checks collision and quits if collided
-                if (FlappyPlayer.CeilingCollision(ScreenY)) Lost = true;
-
-                //Pipes.Move(ScreenX);
-                /*if (Pipes.Collision(FlappyPlayer.HitBox)) {
-                        Console.WriteLine("Game over and closing");
-                        GameOn = false;
-                }*/
-
                 // Checks for jump input
                 if (Raylib.IsKeyPressed(KeyboardKey.Space) || Raylib.IsMouseButtonPressed(MouseButton.Left)) FlappyPlayer.Jump = true;
-                
-                // Updates player and pipe position
-                FlappyPlayer.Move();
-                /*foreach (Pipe Pip in Pipes)
-                {
-                    Pip.Move(1700);
-                    if (Pip.Collision(FlappyPlayer.HitBox))
-                    {
-                        GameOn = false;
-                        //Raylib.CloseWindow();
-                    }
-                }*/
 
+                // Updates player and pipe position and checks for collision
+                FlappyPlayer.Move();
+                if (FlappyPlayer.CeilingCollision(ScreenY)) Lost = true;
+                foreach (PipeObject Pipe in PipeCollection)
+                {
+                    Pipe.Move(ScreenX);
+                    if (Pipe.Collision(FlappyPlayer.HitBox)) { Lost = true; continue; }
+                }
+
+                // Checks collision and quits if collided
+                
 
             }
             // Decides whether to close or exit to main menu
-            if (Raylib.WindowShouldClose()) MenuState = Scene.Close;
+            if (Raylib.WindowShouldClose()) MenuState = Scene.Close; //Player chose to quit so instantly proceeds without rendering anything additional
             else
             {
                 Raylib.BeginDrawing();
                 Raylib.ClearBackground(Color.SkyBlue);
                 Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
-                Raylib.WaitTime(1);
                 FlappyPlayer.Draw();
-                /*foreach (Pipe in PipeContainer)
-                {
-                    Pipe.Draw
-                }*/
-                Raylib.DrawTextEx(MonospaceFont, GameText[8], new Vector2(TextRect[8].X, TextRect[8].Y), TextSize[8], 4, Color.Black);
+                foreach (PipeObject Pipe in PipeCollection) Pipe.Draw();
+                Raylib.DrawTextEx(MonospaceFont, GameText[8], new Vector2(TextRect[8].X, TextRect[8].Y), TextSize[8], 4, Color.Black); // Game over text
                 Raylib.EndDrawing();
+                Raylib.WaitTime(1);
                 MenuState = Scene.Menu;
-                GameText[6] = "3";
-                FlappyPlayer.HitBox.X = (int)((ScreenX * 0.075) - (FlappyPlayer.HitBox.Width / 2));
-                FlappyPlayer.HitBox.Y = (int)((ScreenY * 0.5) - FlappyPlayer.HitBox.Height);
+                GameText[6] = "3"; // Resets countdown for next game
+                FlappyPlayer.HitBox.Y = (int)((ScreenY * 0.5) - FlappyPlayer.HitBox.Height); // Resets player position
             }
         }
 
@@ -321,15 +293,12 @@ namespace Game
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.SkyBlue);
             Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
+            FlappyPlayer.Draw();
+            foreach (PipeObject Pipe in PipeCollection) Pipe.Draw();
             for (int i = 11; i < 13; i++) // Draw multiple text
             {
                 Raylib.DrawTextEx(MonospaceFont, GameText[i], new Vector2((int)TextRect[i].X, (int)TextRect[i].Y), TextSize[i], 4, Color.Black);
             }
-            FlappyPlayer.Draw();
-            /*foreach (Pipe in PipeContainer)
-            {
-                Pipe.Draw
-            }*/
             Raylib.EndDrawing();
 
             // Check if player clicks on mouse button
@@ -358,10 +327,7 @@ namespace Game
             Raylib.ClearBackground(Color.SkyBlue);
             Raylib.DrawRectangle(0, (int)(ScreenY * 0.8), ScreenX, ScreenY, Color.Green);
             FlappyPlayer.Draw();
-            /*foreach (Pipe in PipeContainer)
-            {
-                Pipe.Draw
-            }*/
+            foreach (PipeObject Pipe in PipeCollection) Pipe.Draw();
             //for (int i = 0; i < GameText.Count(); i++) // Draw multiple text
             Raylib.DrawTextEx(MonospaceFont, GameText[11], new Vector2((int)TextRect[11].X, (int)TextRect[11].Y), TextSize[11], 4, Color.Black);
             Raylib.DrawTextEx(MonospaceFont, GameText[13], new Vector2((int)TextRect[13].X, (int)TextRect[13].Y), TextSize[13], 4, Color.Black);

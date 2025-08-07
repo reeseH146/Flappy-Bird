@@ -4,14 +4,8 @@ Dependencies :
  - STD libraries
  - Raylib (included in code, not sure if building/publishing auto includes but debugging does)
 Conventions : 
- - Allmann braces
+ - Allman braces
  - PascalCase
-
-# Pipe class
- - Creates rect, heights are passed in
- - Move method which moves it across the screen and reset back when goes off
- - Allows height to be changed
- - As game plays, distance can be decreased between the pipes
 
 # Main
  - Initialise main resources (Bird, pipes)
@@ -50,6 +44,14 @@ Conventions :
  - Unload - Called when closing program to unload image and textures
 
 # Pipe
+ - Rect defines hitboxes, positions
+ - Image and texture to utilise custom images
+
+ - Constructor - contains 2 pipes on either sides both full length of Y axis, top position decided and randomly generated displacement used for bottom pipe
+ - Draw - Draws custom images at current location, if images fails to load draws green rects in its place
+ - Move - Updates position a set distance but resets to right side if crosses a point
+ - Collision - Takes a rect object and checks if any points intersect the pipes
+ - Unload - Called when closing program to unload images and textures
 
 # Future features
  - [ ] Score and high score

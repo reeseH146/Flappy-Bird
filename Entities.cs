@@ -1,5 +1,5 @@
-using System.Reflection.Metadata.Ecma335;
 using Raylib_cs;
+using System.Numerics;
 
 namespace FlappyBird.Entities
 {
@@ -27,22 +27,21 @@ namespace FlappyBird.Entities
             (
                 (float)((ScreenX * 0.075) - (ScreenX * 0.05 * 0.5)),
                 (float)((ScreenY * 0.5) - (ScreenX * 0.05)), // No idea why this centres perfectly, I think my mind is going bonkers
-                (float)(ScreenX * 0.1),
-                (float)(ScreenX * 0.1)
+                new Vector2((float)(ScreenX * 0.075), (float)(ScreenX * 0.075))
             );
             // Movement
             Jump = false;
-            PosYMoveFall = (float)(ScreenY * 0.004);
-            PosYMoveJump = (float)(ScreenY * 0.25);
+            PosYMoveFall = (float)(ScreenY * 0.0028);
+            PosYMoveJump = (float)(ScreenY * 0.17);
             /*PosYCurrent = Convert.ToInt16(ScreenY * 0.5);
             PosYSnap = Convert.ToInt16(ScreenY * 0.5);
             PosYMove = 0;
             MoveDirection = false;*/
             // Image
             BirdImage = Raylib.LoadImage("Assets/Bird.png"); // Loads custom image
-            Raylib.ImageResizeNN(ref BirdImage, (int)(ScreenX * 0.1), (int)(ScreenX * 0.1)); // Resizes custom image to fix hitbox
+            Raylib.ImageResizeNN(ref BirdImage, (int)HitBox.Width, (int)HitBox.Height); // Resizes custom image to fix hitbox
             BirdTex = Raylib.LoadTextureFromImage(BirdImage); // Creates texture from image
-            Raylib.UnloadImage(BirdImage);
+            if (Raylib.IsImageValid(BirdImage)) Raylib.UnloadImage(BirdImage);
         }
 
         public void Draw()
@@ -65,7 +64,7 @@ namespace FlappyBird.Entities
                 Jump = false;
             }
             else HitBox.Y += PosYMoveFall;
-            
+
             /*if (MoveDirection && ((Raylib.GetTime() - CoolDown) >= 0.4))
             {
                 CoolDown = Raylib.GetTime();
@@ -106,8 +105,8 @@ namespace FlappyBird.Entities
         // Unloads all information
         public void Unload()
         {
-            Raylib.UnloadImage(BirdImage);
-            Raylib.UnloadTexture(BirdTex);
+            // if (Raylib.IsImageValid(BirdImage)) Raylib.UnloadImage(BirdImage); // Was causing performance issues, possibly .IsImageValid might be expensive
+            if (Raylib.IsTextureValid(BirdTex)) Raylib.UnloadTexture(BirdTex);
         }
     }
 
@@ -123,80 +122,88 @@ namespace FlappyBird.Entities
     // Checks if made contact with player and quits game if so - Hitbox requires rect
     public class PipeObject
     {
-        // Position
-        int PosX;
-        int[] PosY;
-        // Movement
-        int Speed;
-        // Texture
-        Texture2D[] PipeTex = new Texture2D[2];
-        // Collision
-        int[] HitBox;
+        // Hitbox - used for positioning and collision
+        private Rectangle[] HitBox;
+        private Vector2 PipeSize;
+        private float MovementSpeed;
+        // Image/render
+        private Image[] PipeImages;
+        private Texture2D[] PipeTexs;
 
-        public PipeObject(int ScreenPosX, int YEnd)
+        public PipeObject(int ScreenX, int ScreenY, float PosX, float PosY, int BirdSize) // Expects position as centre
         {
-            PosX = ScreenPosX;
-            PosY = [0 - YEnd, 400 - YEnd]; // Transforms...
-            Speed = 5;
-            Image PipeImg = Raylib.LoadImage("C:/Users/Hi-bu/Reese/VSC/Flappy-Bird/Assets/LocalImages/Pipe.png");
-            if (Raylib.IsImageValid(PipeImg))
+            PipeSize = new Vector2((float)(ScreenX * 0.05), ScreenY);
+            Random Rand = new Random();
+            HitBox = new Rectangle[]
             {
-                PipeImg = Raylib.LoadImage("C:/Users/Hi-bu/Reese/VSC/Flappy-Bird/Assets/Pipe.png");
-            }
-            Raylib.ImageResize(ref PipeImg, 100, 400);
-            PipeTex[0] = Raylib.LoadTextureFromImage(PipeImg);
-            HitBox = [PosX, PosX + 100, PosY[0], PosY[1],/*Bottom Rect Y ->*/PosY[1] + 400, PosY[1] + 800];
+                new Rectangle(PosX - (PipeSize[0] / 2), (float)(PosY - PipeSize[1]), PipeSize), // PosY does contradict normal centre positioning but PosY in this context is the end of the top pipe, bottom pipe uses PosY and adds a difference
+                new Rectangle(PosX - (PipeSize[0] / 2), (float)(PosY + (BirdSize * 1.6 * Rand.Next(15, 18) * 0.1)), PipeSize)
+            };
+            MovementSpeed = (float)(ScreenX * 0.002);
+            // Creates image and textures
+            // Loads images
+            PipeImages = new Image[]
+            {
+                Raylib.LoadImage("Assets/LocalImages/Pipe.png"),
+                Raylib.LoadImage("Assets/LocalImages/Pipe.png"),
+            };
+            // Sanitises images
+            Raylib.ImageResize(ref PipeImages[0], (int)HitBox[0].Width, (int)HitBox[0].Height);
+            Raylib.ImageResize(ref PipeImages[1], (int)HitBox[1].Width, (int)HitBox[1].Height);
+            Raylib.ImageRotate(ref PipeImages[1], 180);
+            // Creates textures from images
+            PipeTexs = new Texture2D[]
+            {
+                Raylib.LoadTextureFromImage(PipeImages[0]),
+                Raylib.LoadTextureFromImage(PipeImages[1])
+            };
+            // Frees images from RAM
+            if (Raylib.IsImageValid(PipeImages[0])) Raylib.UnloadImage(PipeImages[0]);
+            if (Raylib.IsImageValid(PipeImages[1])) Raylib.UnloadImage(PipeImages[1]);
         }
 
         // Literally draws the pipe textures onto the screen
         public void Draw()
         {
-            Raylib.DrawTexture(PipeTex[0], PosX, PosY[0], Color.White); // Top pipe
-            Raylib.DrawTexture(PipeTex[0], PosX, PosY[1], Color.White); // Bottom pipe
+            if (Raylib.IsTextureValid(PipeTexs[0]) && Raylib.IsTextureValid(PipeTexs[1])) // Confirms both textures are able to load
+            {
+                Raylib.DrawTexture(PipeTexs[0], (int)HitBox[0].X, (int)HitBox[0].Y, Color.White); // Top pipe
+                Raylib.DrawTexture(PipeTexs[1], (int)HitBox[1].X, (int)HitBox[1].Y, Color.White); // Bottom pipe
+            }
+            else // Loads default rectangle if custom textures aren't available
+            {
+                Raylib.DrawRectangleRec(HitBox[0], Color.DarkGreen);
+                Raylib.DrawRectangleRec(HitBox[1], Color.DarkGreen);
+            }
         }
 
         // Decrements x position of pipe to move, checks if they need to reset
         public void Move(int ScreenX)
         {
-            PosX -= Speed;
-            HitBox[0] = PosX;
-            if (PosX < -290)
-                PosX = Convert.ToInt16(ScreenX * 1.1);
-            HitBox[0] = PosX;
+            HitBox[0].X -= MovementSpeed;
+            HitBox[1].X -= MovementSpeed;
+
+            if ((HitBox[0].X + (HitBox[0].Width / 2)) < (ScreenX * -0.1))
+            {
+                HitBox[0].X = (float)(ScreenX * 1.1);
+                HitBox[1].X = (float)(ScreenX * 1.1);
+            }
         }
 
         // Collision check with player bird
-        // Uses guard clauses to return early if there is overlap
-        //
-        // Pipe HitBox = [PosX, PosX + 0, PosY[0], PosY[0] + 0,/*Bottom Rect ->*/PosY[1], PosY[1] + 0];
-        // Bird HitBox = [PosX, PosX + 100, PosYCurrent, PosYCurrent + 100];
-        public bool Collision(int[] BirdHitBox)
+        public bool Collision(Rectangle CollideObject)
         {
-            // Compares bird LeftX and RightX within range of pipes 
-            // If (Bird Left X within Pipe X range) or (Bird Right X within Pipe X range)
-            if (((HitBox[0] <= BirdHitBox[0]) && (BirdHitBox[0] <= HitBox[1])) || ((HitBox[0] <= BirdHitBox[1]) && (BirdHitBox[1] <= HitBox[1])))
-            {
-                // Compares bird Top Y and Bottom Y within range of top pipe
-                // If (Bird Top Y within Top Pipe Y range) or (Bird Bottom Y within Top Pipe Y range)
-                if (((HitBox[2] <= BirdHitBox[2]) && (BirdHitBox[2] <= HitBox[3])) || ((HitBox[2] <= BirdHitBox[3]) && (BirdHitBox[3] <= HitBox[3])))
-                {
-                    return true;
-                }
-                // Compares bird Top Y and Bottom Y within range of bottom pipe
-                // If (Bird Top Y within Top Pipe Y range) or (Bird Bottom Y within Top Pipe Y range)
-                else if (((HitBox[4] <= BirdHitBox[2]) && (BirdHitBox[2] <= HitBox[5])) || ((HitBox[4] <= BirdHitBox[3]) && (BirdHitBox[3] <= HitBox[5])))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
+            if (Raylib.CheckCollisionRecs(CollideObject, HitBox[0]) || Raylib.CheckCollisionRecs(CollideObject, HitBox[1])) return true;
+            else return false;
+        }
+
+        // Unloads all information
+        public void Unload()
+        {
+            // if (Raylib.IsImageValid(PipeImages[0])) Raylib.UnloadImage(PipeImages[0]); // Was causing performance issues, possibly .IsImageValid might be expensive
+            // if (Raylib.IsImageValid(PipeImages[1])) Raylib.UnloadImage(PipeImages[1]);
+            if (Raylib.IsTextureValid(PipeTexs[0])) Raylib.UnloadTexture(PipeTexs[0]);
+            if (Raylib.IsTextureValid(PipeTexs[1])) Raylib.UnloadTexture(PipeTexs[1]);
         }
     }
 }
