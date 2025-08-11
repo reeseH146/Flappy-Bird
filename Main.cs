@@ -93,10 +93,15 @@ namespace Game
             // Creates player and pipe objects
             // Pipe Pipes = new Pipe(1000, 580 + 300);
             FlappyPlayer = new PlayerBird(ScreenX, ScreenY); // Creates bird object
-            //for (int i = (int)(ScreenX * 0.3); i <= ScreenX; i += (int)(ScreenX * 0.3))
-            //{ // Creates each set of pipes
-                PipeCollection.Add(new PipeObject(ScreenX, ScreenY, (float)(ScreenX * 0.5), (float)(ScreenX * 0.1), (int)FlappyPlayer.HitBox.Width));
-            //}
+            Random Rand = new Random();
+            for (double i = 0.5; i < 2; i += 0.3) // -0.1, 0.2, 0.5, 0.8, 1.1 -> 1.4 // 0.5, 0.8, 1.1, 1.4, 1.7
+            { // Creates each set of pipes
+                /*
+                Pipe should have a gap starting at 0.1 * ScreenY to 0.9 * ScreenY, however the pipe origin is not in the middle for Y axis like everything else
+                POSY of the pipe is a float representing percentage of ScreenY that bottom of top pipe ends at while gap between top and bottom pipe starts at
+                */
+                PipeCollection.Add(new PipeObject(ScreenX, ScreenY, (float)i, (float)(Rand.Next(2, 6) * 0.1), (int)FlappyPlayer.HitBox.Width));
+            }
             // Initialising text rect
             for (int i = 0; i < GameText.Count(); i++)
             {
@@ -257,10 +262,6 @@ namespace Game
                     Pipe.Move(ScreenX);
                     if (Pipe.Collision(FlappyPlayer.HitBox)) { Lost = true; continue; }
                 }
-
-                // Checks collision and quits if collided
-                
-
             }
             // Decides whether to close or exit to main menu
             if (Raylib.WindowShouldClose()) MenuState = Scene.Close; //Player chose to quit so instantly proceeds without rendering anything additional
@@ -273,10 +274,12 @@ namespace Game
                 foreach (PipeObject Pipe in PipeCollection) Pipe.Draw();
                 Raylib.DrawTextEx(MonospaceFont, GameText[8], new Vector2(TextRect[8].X, TextRect[8].Y), TextSize[8], 4, Color.Black); // Game over text
                 Raylib.EndDrawing();
+
                 Raylib.WaitTime(1);
                 MenuState = Scene.Menu;
                 GameText[6] = "3"; // Resets countdown for next game
                 FlappyPlayer.HitBox.Y = (int)((ScreenY * 0.5) - FlappyPlayer.HitBox.Height); // Resets player position
+                foreach (PipeObject Pipe in PipeCollection) Pipe.Reset(ScreenX, ScreenY); // Resets pipe position
             }
         }
 
@@ -346,12 +349,3 @@ namespace Game
         }
     }
 }
-
-// TODO: Fix pipe creation class and handling in main
-// TODO: Multiple pipes
-// TODO: Implement clouds
-// TODO: Implement score
-// TODO: Menu
-// TODO: Skins
-
-// TODO: Line 16

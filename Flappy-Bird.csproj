@@ -6,6 +6,8 @@
     <RootNamespace>Flappy_Bird</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!--<PublishSingleFile>true<PublishSingleFile>
+    <SelfContained>true<SelfContained>-->
   </PropertyGroup>
 
   <ItemGroup>

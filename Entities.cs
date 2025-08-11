@@ -31,8 +31,8 @@ namespace FlappyBird.Entities
             );
             // Movement
             Jump = false;
-            PosYMoveFall = (float)(ScreenY * 0.0028);
-            PosYMoveJump = (float)(ScreenY * 0.17);
+            PosYMoveFall = (float)(ScreenY * 0.004);
+            PosYMoveJump = (float)(ScreenY * 0.16);
             /*PosYCurrent = Convert.ToInt16(ScreenY * 0.5);
             PosYSnap = Convert.ToInt16(ScreenY * 0.5);
             PosYMove = 0;
@@ -123,23 +123,29 @@ namespace FlappyBird.Entities
     public class PipeObject
     {
         // Hitbox - used for positioning and collision
-        private Rectangle[] HitBox;
         private Vector2 PipeSize;
+        private Rectangle[] HitBox;
+        private Vector2[] Origin;
         private float MovementSpeed;
         // Image/render
         private Image[] PipeImages;
         private Texture2D[] PipeTexs;
 
-        public PipeObject(int ScreenX, int ScreenY, float PosX, float PosY, int BirdSize) // Expects position as centre
+        public PipeObject(int ScreenX, int ScreenY, float PosXScale, float PosYScale, int BirdSize) // Expects position as centre
         {
             PipeSize = new Vector2((float)(ScreenX * 0.05), ScreenY);
             Random Rand = new Random();
             HitBox = new Rectangle[]
             {
-                new Rectangle(PosX - (PipeSize[0] / 2), (float)(PosY - PipeSize[1]), PipeSize), // PosY does contradict normal centre positioning but PosY in this context is the end of the top pipe, bottom pipe uses PosY and adds a difference
-                new Rectangle(PosX - (PipeSize[0] / 2), (float)(PosY + (BirdSize * 1.6 * Rand.Next(15, 18) * 0.1)), PipeSize)
+                new Rectangle((PosXScale * ScreenX) - (PipeSize[0] / 2), (float)((PosYScale * ScreenY) - PipeSize[1]), PipeSize), // PosY does contradict normal centre positioning but PosY in this context is the end of the top pipe, bottom pipe uses PosY and adds a difference
+                new Rectangle((PosXScale * ScreenX) - (PipeSize[0] / 2), (float)((PosYScale * ScreenY) + (BirdSize * 1.7 * Rand.Next(15, 18) * 0.1)), PipeSize)
             };
-            MovementSpeed = (float)(ScreenX * 0.002);
+            Origin = new Vector2[]
+            {
+                new Vector2(HitBox[0].X, HitBox[0].Y),
+                new Vector2(HitBox[1].X, HitBox[1].Y)
+            };
+            MovementSpeed = (float)(ScreenX * 0.0025);
             // Creates image and textures
             // Loads images
             PipeImages = new Image[]
@@ -183,10 +189,10 @@ namespace FlappyBird.Entities
             HitBox[0].X -= MovementSpeed;
             HitBox[1].X -= MovementSpeed;
 
-            if ((HitBox[0].X + (HitBox[0].Width / 2)) < (ScreenX * -0.1))
+            if ((HitBox[0].X + (HitBox[0].Width / 2)) <= (ScreenX * -0.1))
             {
-                HitBox[0].X = (float)(ScreenX * 1.1);
-                HitBox[1].X = (float)(ScreenX * 1.1);
+                HitBox[0].X = (float)(ScreenX * 1.4);
+                HitBox[1].X = (float)(ScreenX * 1.4);
             }
         }
 
@@ -195,6 +201,15 @@ namespace FlappyBird.Entities
         {
             if (Raylib.CheckCollisionRecs(CollideObject, HitBox[0]) || Raylib.CheckCollisionRecs(CollideObject, HitBox[1])) return true;
             else return false;
+        }
+
+        // Resets position when finishing a game
+        public void Reset(int ScreenX, int ScreenY)
+        {
+            HitBox[0].X = Origin[0][0];
+            HitBox[0].Y = Origin[0][1];
+            HitBox[1].X = Origin[1][0];
+            HitBox[1].Y = Origin[1][1];
         }
 
         // Unloads all information
