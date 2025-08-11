@@ -38,7 +38,7 @@ namespace FlappyBird.Entities
             PosYMove = 0;
             MoveDirection = false;*/
             // Image
-            BirdImage = Raylib.LoadImage("Assets/Bird.png"); // Loads custom image
+            BirdImage = Raylib.LoadImage("Assets/LocalImages/Bird.png"); // Loads custom image
             Raylib.ImageResizeNN(ref BirdImage, (int)HitBox.Width, (int)HitBox.Height); // Resizes custom image to fix hitbox
             BirdTex = Raylib.LoadTextureFromImage(BirdImage); // Creates texture from image
             if (Raylib.IsImageValid(BirdImage)) Raylib.UnloadImage(BirdImage);
@@ -148,6 +148,7 @@ namespace FlappyBird.Entities
             MovementSpeed = (float)(ScreenX * 0.0025);
             // Creates image and textures
             // Loads images
+            // Expects pipe the length of display so some custom images will not work and instead stretch
             PipeImages = new Image[]
             {
                 Raylib.LoadImage("Assets/LocalImages/Pipe.png"),
